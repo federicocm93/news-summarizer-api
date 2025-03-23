@@ -8,7 +8,6 @@ This is the backend server for the News Summarizer Chrome extension with subscri
 - 💲 Subscription management with Stripe integration
 - 📊 Request tracking with usage limits based on subscription tier
 - 🚀 Free trial system with 50 requests for new users
-- 🔄 Proxy to Ollama API for generating summaries
 
 ## Subscription Tiers
 
@@ -121,7 +120,7 @@ docker run -p 3000:3000 --env-file .env news-summarizer-server:latest
 
 ### API
 
-- `POST /api/generate` - Proxy request to Ollama API
+- `POST /api/generate` - Proxy request to OpenAI API
 - `GET /api/usage` - Get current usage statistics
 - `POST /api/try-premium` - Activate free trial
 

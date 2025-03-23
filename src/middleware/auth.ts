@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
 import User from '../models/User';
 import ApiRequest from '../models/ApiRequest';
 

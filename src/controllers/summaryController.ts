@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { fetch } from 'undici';
 
-// Get the Ollama API URL from environment variables
-const OLLAMA_API_URL = process.env.OLLAMA_API_URL || 'http://localhost:11434/api';
 // Get the OpenAI API key from environment variables
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
