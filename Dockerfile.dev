@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install nodemon for hot reloading
+RUN npm install -g nodemon ts-node
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Expose port
+EXPOSE 3000
+
+# The command will be overridden by docker-compose.yml
+CMD ["npm", "run", "dev"] 
