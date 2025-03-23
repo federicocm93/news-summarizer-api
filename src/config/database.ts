@@ -3,11 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/news-summarizer';
+const MONGODB_USER = process.env.MONGODB_USER || '';
+const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD || '';
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(MONGODB_URI, {
+    const conn = await mongoose.connect(`mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster0.m90ux.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`, {
       serverSelectionTimeoutMS: 5000,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -18,10 +19,7 @@ export const connectDB = async (): Promise<void> => {
     if (error.stack) {
       console.error(`Stack Trace: ${error.stack}`);
     }
-    const maskedUri = MONGODB_URI.replace(
-      /mongodb(\+srv)?:\/\/[^:]+:([^@]+)@/,
-      'mongodb$1://<username>:****@'
-    );
+    const maskedUri = `mongodb+srv://${MONGODB_USER}:****@cluster0.m90ux.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
     console.error(`Attempted connection with URI: ${maskedUri}`);
     process.exit(1);
   }
