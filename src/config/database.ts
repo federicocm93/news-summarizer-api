@@ -7,18 +7,31 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/news-s
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(MONGODB_URI);
+    const conn = await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error}`);
-    console.log(`MONGODB_URI: ${MONGODB_URI}`);
+  } catch (error: any) {
+    console.error('MongoDB Connection Error Details:');
+    console.error(`Error Type: ${error.name}`);
+    console.error(`Error Message: ${error.message}`);
+    if (error.stack) {
+      console.error(`Stack Trace: ${error.stack}`);
+    }
+    const maskedUri = MONGODB_URI.replace(
+      /mongodb(\+srv)?:\/\/[^:]+:([^@]+)@/,
+      'mongodb$1://<username>:****@'
+    );
+    console.error(`Attempted connection with URI: ${maskedUri}`);
     process.exit(1);
   }
 };
 
 // Set up mongoose event listeners
 mongoose.connection.on('error', (err: Error) => {
-  console.error(`MongoDB connection error: ${err}`);
+  console.error('MongoDB connection error details:');
+  console.error(`Error Type: ${err.name}`);
+  console.error(`Error Message: ${err.message}`);
 });
 
 mongoose.connection.on('disconnected', () => {
