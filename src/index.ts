@@ -59,6 +59,10 @@ app.use((req: Request, res: Response) => {
   });
 });
 
+fetch("https://www.google.com")
+  .then(() => console.log("✅ Render puede hacfer solicitudes salientes"))
+  .catch((err: any) => console.error("❌ Render no puede hacer solicitudes salientes", err));
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
