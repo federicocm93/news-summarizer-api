@@ -7,11 +7,6 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/news-summarizer
-      - JWT_SECRET=your_secret_key_here_change_in_production
-      - OLLAMA_API_URL=http://host.docker.internal:11434/api
     volumes:
       - ./:/app
       - /app/node_modules
