@@ -1,7 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import session from 'express-session';
 import { connectDB } from './config/database';
+import passport from './config/passport';
 import authRoutes from './routes/authRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import summaryRoutes from './routes/summaryRoutes';
@@ -17,13 +19,18 @@ connectDB().catch(err => {
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 // Body parser middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Parse JSON bodies for all routes except the Stripe webhook
-app.use((req, res, next) => {
+app.use((req: any, res: any, next: any) => {
   if (req.originalUrl === '/api/subscription/webhook') {
     next();
   } else {
@@ -31,18 +38,29 @@ app.use((req, res, next) => {
   }
 });
 
+// Session middleware for Passport
+app.use(session({
+  secret: process.env.JWT_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/summary', summaryRoutes);
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (req: any, res: any) => {
   res.status(200).json({ status: 'ok' });
 });
 
 // Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: any, res: any, next: any) => {
   console.error('Global error handler:', err);
   res.status(500).json({
     status: 'error',
@@ -52,7 +70,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Handle 404 errors
-app.use((req: Request, res: Response) => {
+app.use((req: any, res: any) => {
   res.status(404).json({
     status: 'fail',
     message: `Route ${req.originalUrl} not found`

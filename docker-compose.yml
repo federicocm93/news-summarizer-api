@@ -6,10 +6,10 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "8000:8000"
     volumes:
       - ./:/app
-      - /app/node_modules
+      - node_modules:/app/node_modules
     command: npm run dev
     depends_on:
       - mongo
@@ -33,4 +33,5 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=example
       - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017/news-summarizer
 volumes:
-  mongo-data: 
+  mongo-data:
+  node_modules: 

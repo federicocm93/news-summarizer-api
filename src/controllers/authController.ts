@@ -1,16 +1,6 @@
-import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import User, { SubscriptionTier } from '../models/User';
-
-// Extend Express Request
-declare global {
-  namespace Express {
-    interface Request {
-      user?: any;
-    }
-  }
-}
 
 // Get environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -23,7 +13,7 @@ const signToken = (id: string, email: string): string => {
 };
 
 // Register a new user
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const register = async (req: any, res: any): Promise<void> => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -87,7 +77,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Login existing user
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (req: any, res: any): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -133,15 +123,37 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// Handle login with Google
+export const googleAuthCallback = (req: any, res: any): void => {
+  try {
+    if (!req.user) {
+      res.redirect(process.env.AUTH_FAILURE_REDIRECT || '/login');
+      return;
+    }
+
+    // Generate token
+    const token = signToken(req.user.id, req.user.email);
+    
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL || '/'}?token=${token}`);
+  } catch (error) {
+    console.error('Error in Google authentication callback:', error);
+    res.redirect(process.env.AUTH_FAILURE_REDIRECT || '/login');
+  }
+};
+
 // Get current user
-export const getMe = async (req: Request, res: Response): Promise<void> => {
+export const getMe = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
-    
+    const { email, apiKey, subscriptionTier, requestsRemaining } = user;
     res.status(200).json({
       status: 'success',
       data: {
-        user
+        email,
+        apiKey,
+        subscriptionTier,
+        requestsRemaining
       }
     });
   } catch (error) {
@@ -154,7 +166,7 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Refresh API key
-export const refreshApiKey = async (req: Request, res: Response): Promise<void> => {
+export const refreshApiKey = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
     

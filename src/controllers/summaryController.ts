@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
 import { fetch } from 'undici';
 
 // Get the OpenAI API key from environment variables
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // Call OpenAI API for summarization
-export const handleOpenAIRequest = async (req: Request, res: Response): Promise<void> => {
+export const handleOpenAIRequest = async (req: any, res: any): Promise<void> => {
   try {
     const startTime = Date.now();
     
@@ -97,7 +96,7 @@ Summary:`;
 };
 
 // Get user's API usage statistics
-export const getUsageStats = async (req: Request, res: Response): Promise<void> => {
+export const getUsageStats = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
     

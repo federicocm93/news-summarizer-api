@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import ApiRequest from '../models/ApiRequest';
@@ -7,7 +6,7 @@ import ApiRequest from '../models/ApiRequest';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Middleware to protect routes that require authentication
-export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const protect = async (req: any, res: any, next: any): Promise<void> => {
   try {
     // 1) Get the token from the headers
     let token;
@@ -63,7 +62,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 };
 
 // Middleware to check if the user has remaining API requests
-export const checkRequestLimit = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const checkRequestLimit = async (req: any, res: any, next: any): Promise<void> => {
   try {
     const user = req.user;
     
@@ -108,7 +107,7 @@ export const checkRequestLimit = async (req: Request, res: Response, next: NextF
 };
 
 // Middleware to log API requests
-export const logApiRequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {  
+export const logApiRequest = async (req: any, res: any, next: any): Promise<void> => {  
   const startTime = Date.now();
 
   res.on('finish', () => {

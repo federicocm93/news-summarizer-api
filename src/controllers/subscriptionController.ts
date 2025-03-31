@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import User, { SubscriptionTier } from '../models/User';
 import Subscription from '../models/Subscription';
@@ -13,7 +12,7 @@ const PREMIUM_TIER_REQUESTS = parseInt(process.env.PREMIUM_TIER_REQUESTS || '500
 const PRO_TIER_REQUESTS = parseInt(process.env.PRO_TIER_REQUESTS || '5000', 10);
 
 // Create a Stripe checkout session for subscription
-export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {
+export const createCheckoutSession = async (req: any, res: any): Promise<void> => {
   try {
     const { tier, successUrl, cancelUrl } = req.body;
     const user = req.user;
@@ -92,7 +91,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
 };
 
 // Handle Stripe webhook events
-export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
+export const handleWebhook = async (req: any, res: any): Promise<void> => {
   try {
     const signature = req.headers['stripe-signature'] as string;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -250,7 +249,7 @@ const handleSubscriptionDeleted = async (subscription: Stripe.Subscription): Pro
 };
 
 // Get user's subscription information
-export const getSubscription = async (req: Request, res: Response): Promise<void> => {
+export const getSubscription = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
     
