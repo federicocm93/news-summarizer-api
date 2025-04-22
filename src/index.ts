@@ -5,7 +5,6 @@ import session from 'express-session';
 import { connectDB } from './config/database';
 import passport from './config/passport';
 import authRoutes from './routes/authRoutes';
-import subscriptionRoutes from './routes/subscriptionRoutes';
 import summaryRoutes from './routes/summaryRoutes';
 
 // Load environment variables
@@ -51,7 +50,6 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/summary', summaryRoutes);
 
 // Health check endpoint
