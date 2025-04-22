@@ -1,9 +1,12 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import ApiRequest from '../models/ApiRequest';
-
+import { EventName, Paddle } from '@paddle/paddle-node-sdk';
 // Get JWT secret from environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Initialize Paddle client
+const paddle = new Paddle(process.env.PADDLE_API_KEY || '');
 
 // Middleware to protect routes that require authentication
 export const protect = async (req: any, res: any, next: any): Promise<void> => {
@@ -61,6 +64,31 @@ export const protect = async (req: any, res: any, next: any): Promise<void> => {
   }
 };
 
+export const protectWebhook = async (req: any, res: any, next: any): Promise<void> => {
+  const signature = (req.headers['paddle-signature'] as string) || '';
+  // req.body should be of type `buffer`, convert to string before passing it to `unmarshal`. 
+  // If express returned a JSON, remove any other middleware that might have processed raw request to object
+  const rawRequestBody = req.body.toString();
+  // Replace `WEBHOOK_SECRET_KEY` with the secret key in notifications from vendor dashboard
+  const secretKey = process.env['PADDLE_WEBHOOK_SECRET'] || '';
+
+  try {
+    if (signature && rawRequestBody) {
+      // The `unmarshal` function will validate the integrity of the webhook and return an entity
+      const eventData = await paddle.webhooks.unmarshal(rawRequestBody, secretKey, signature);
+      req.body = eventData.data;
+    } else {
+      console.log('Signature missing in header');
+    }
+    next();
+  } catch (error) {
+    res.status(401).json({
+      status: 'fail',
+      message: 'Invalid token or authorization error'
+    });
+  }
+};
+
 // Middleware to check if the user has remaining API requests
 export const checkRequestLimit = async (req: any, res: any, next: any): Promise<void> => {
   try {
@@ -75,11 +103,21 @@ export const checkRequestLimit = async (req: any, res: any, next: any): Promise<
     }
 
     // Check if the user has remaining requests
-    if (user.requestsRemaining <= 0) {
+    if (!user.hasRemainingRequests()) {
       res.status(403).json({
         status: 'fail',
         message: 'You have reached your request limit. Please upgrade your subscription.',
         code: 'REQUEST_LIMIT_EXCEEDED'
+      });
+      return;
+    }
+
+    // Check if the user's subscription has expired
+    if (!user.isSubscriptionActive()) {
+      res.status(403).json({
+        status: 'fail',
+        message: 'Your subscription has expired. Please upgrade your subscription.',
+        code: 'SUBSCRIPTION_EXPIRED'
       });
       return;
     }

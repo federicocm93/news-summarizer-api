@@ -51,6 +51,7 @@ export const register = async (req: any, res: any): Promise<void> => {
       password,
       apiKey,
       subscriptionTier: SubscriptionTier.FREE,
+      subscriptionExpirationDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Same day next month
       requestsRemaining: FREE_TRIAL_REQUESTS,
     });
 

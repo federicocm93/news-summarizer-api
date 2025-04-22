@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SubscriptionTier } from './Subscription';
+import { SubscriptionTier } from '../enums/SubscriptionTier';
 
 // Get environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -12,13 +12,20 @@ export interface IUserDocument extends mongoose.Document {
   password: string;
   apiKey: string;
   subscriptionTier: SubscriptionTier;
+  subscriptionExpirationDate: Date;
   requestsRemaining: number;
   resetTokenUsed: boolean;
   resetToken: string;
   resetTokenExpires: Date;
-  googleId?: string;
+  externalId?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
   generateJWT(): string;
+  generatePremiumMonthlySubscription(): void;
+  generatePremiumYearlySubscription(): void;
+  generateProMonthlySubscription(): void;
+  generateProYearlySubscription(): void;
+  hasRemainingRequests(): boolean;
+  isSubscriptionActive(): boolean;
 }
 
 const userSchema = new Schema<IUserDocument>(
@@ -44,6 +51,10 @@ const userSchema = new Schema<IUserDocument>(
       enum: Object.values(SubscriptionTier),
       default: SubscriptionTier.FREE
     },
+    subscriptionExpirationDate: {
+      type: Date,
+      default: null
+    },
     requestsRemaining: {
       type: Number,
       default: 0
@@ -54,9 +65,9 @@ const userSchema = new Schema<IUserDocument>(
     },
     resetToken: String,
     resetTokenExpires: Date,
-    googleId: {
+    externalId: {
       type: String,
-      sparse: true
+      unique: true
     }
   },
   {
@@ -82,6 +93,34 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 // Method to generate JWT token
 userSchema.methods.generateJWT = function(): string {
   return jwt.sign({ id: this._id, email: this.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN});
+};
+
+userSchema.methods.generatePremiumMonthlySubscription = function(): void {
+  this.subscriptionTier = SubscriptionTier.PREMIUM;
+  this.subscriptionExpirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+};
+
+userSchema.methods.generatePremiumYearlySubscription = function(): void {
+  this.subscriptionTier = SubscriptionTier.PREMIUM;
+  this.subscriptionExpirationDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+};
+
+userSchema.methods.generateProMonthlySubscription = function(): void {
+  this.subscriptionTier = SubscriptionTier.PRO;
+  this.subscriptionExpirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+};
+
+userSchema.methods.generateProYearlySubscription = function(): void {
+  this.subscriptionTier = SubscriptionTier.PRO;
+  this.subscriptionExpirationDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+};
+
+userSchema.methods.hasRemainingRequests = function(): boolean {
+  return this.requestsRemaining > 0;
+};
+
+userSchema.methods.isSubscriptionActive = function(): boolean {
+  return this.subscriptionExpirationDate && this.subscriptionExpirationDate > new Date();
 };
 
 const User = mongoose.model<IUserDocument>('User', userSchema);
