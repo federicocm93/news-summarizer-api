@@ -27,7 +27,8 @@
     "passport-google-oauth20": "^2.0.0",
     "stripe": "^13.2.0",
     "undici": "^5.28.2",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "connect-mongo": "^5.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",

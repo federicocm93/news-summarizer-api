@@ -5,6 +5,6 @@ import { handleWebhook } from '../controllers/webhookController';
 const router = express.Router();
 
 // Protected routes
-router.post('/webhook/notify', protectWebhook, logApiRequest, checkRequestLimit, handleWebhook);
+router.post('/notify', protectWebhook, logApiRequest, checkRequestLimit, handleWebhook);
 
 export default router; 

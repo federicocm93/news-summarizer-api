@@ -6,6 +6,8 @@ import { connectDB } from './config/database';
 import passport from './config/passport';
 import authRoutes from './routes/authRoutes';
 import summaryRoutes from './routes/summaryRoutes';
+import webhookRoutes from './routes/webhooksRoutes';
+import MongoStore from 'connect-mongo';
 
 // Load environment variables
 dotenv.config();
@@ -41,7 +43,11 @@ app.use((req: any, res: any, next: any) => {
 app.use(session({
   secret: process.env.JWT_SECRET || 'your-secret-key',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'your-mongodb-uri',
+    ttl: 14 * 24 * 60 * 60 // = 14 days
+  })
 }));
 
 // Initialize Passport
@@ -51,6 +57,7 @@ app.use(passport.session());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/summary', summaryRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Health check endpoint
 app.get('/health', (req: any, res: any) => {
