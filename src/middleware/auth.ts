@@ -65,14 +65,14 @@ export const protect = async (req: any, res: any, next: any): Promise<void> => {
 };
 
 export const protectWebhook = async (req: any, res: any, next: any): Promise<void> => {
-  const signature = (req.headers['paddle-signature'] as string) || '';
-  // req.body should be of type `buffer`, convert to string before passing it to `unmarshal`. 
-  // If express returned a JSON, remove any other middleware that might have processed raw request to object
-  const rawRequestBody = req.body.toString();
-  // Replace `WEBHOOK_SECRET_KEY` with the secret key in notifications from vendor dashboard
-  const secretKey = process.env['PADDLE_WEBHOOK_SECRET'] || '';
-
   try {
+    const signature = (req.headers['paddle-signature'] as string) || '';
+    // req.body should be of type `buffer`, convert to string before passing it to `unmarshal`. 
+    // If express returned a JSON, remove any other middleware that might have processed raw request to object
+    const rawRequestBody = req.body.toString();
+    // Replace `WEBHOOK_SECRET_KEY` with the secret key in notifications from vendor dashboard
+    const secretKey = process.env['PADDLE_WEBHOOK_SECRET'] || '';
+
     if (signature && rawRequestBody) {
       // The `unmarshal` function will validate the integrity of the webhook and return an entity
       const eventData = await paddle.webhooks.unmarshal(rawRequestBody, secretKey, signature);
@@ -81,7 +81,8 @@ export const protectWebhook = async (req: any, res: any, next: any): Promise<voi
       console.log('Signature missing in header');
     }
     next();
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error processing webhook protection:', error.message);
     res.status(401).json({
       status: 'fail',
       message: 'Invalid token or authorization error'
