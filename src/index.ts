@@ -33,8 +33,7 @@ app.use(cors({
 // Parse JSON bodies for all routes except the Stripe webhook
 app.use((req: any, res: any, next: any) => {
   if (req.originalUrl === '/api/webhooks/notify') {
-    // Store the raw body for webhook verification
-    express.raw({ type: 'application/json' })
+    express.raw({ type: 'application/json' })(req, res, next);
   } else {
     express.json()(req, res, next);
   }

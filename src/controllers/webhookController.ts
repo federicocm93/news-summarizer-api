@@ -29,20 +29,24 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
       console.log('Subscription created');
     } else if (eventData.eventType === 'subscription_updated') {
       console.log('Subscription updated');
-  } else if (eventData.eventType === 'subscription_cancelled') {
-    console.log('Subscription cancelled');
-  } else if (eventData.eventType === 'customer_created') {
-    const user = await User.findOne({ email: eventData.email });
-    if (!user) { 
-      throw new Error('User not found');
+    } else if (eventData.eventType === 'subscription_cancelled') {
+      console.log('Subscription cancelled');
+    } else if (eventData.eventType === 'customer_created') {
+      const user = await User.findOne({ email: eventData.email });
+      if (!user) { 
+        throw new Error('User not found');
+      }
+      user.externalId = eventData.id;
+      await user.save();
+      return res.status(200).json({
+        status: 'success',
+        message: 'Webhook received'
+      });
     }
-    user.externalId = eventData.id;
-    await user.save();
     return res.status(200).json({
       status: 'success',
       message: 'Webhook received'
     });
-  }
   } catch (error) {
     console.error('Error handling webhook:', error);
     res.status(500).json({
