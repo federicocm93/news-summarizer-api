@@ -1,12 +1,18 @@
 import User, { SubscriptionTier } from "../models/User";
+import { SubscriptionCreatedNotification } from '@paddle/paddle-node-sdk';
 
 export const handleWebhook = async (req: any, res: any): Promise<void> => {
   try {
     console.log('Webhook received');
     const eventData = req.body;
     console.log('eventData', eventData);
-    if (eventData.eventType === 'subscription_created') {
-      const user = await User.findOne({ externalId: eventData.customer_id });
+    
+    // Get the event type from the constructor name
+    const eventType = eventData.constructor.name.toLowerCase();
+    console.log('Event type:', eventType);
+
+    if (eventType === 'subscriptioncreatednotification') {
+      const user = await User.findOne({ externalId: eventData.customerId });
       if (!user) { 
         throw new Error('User not found');
       }
@@ -28,11 +34,11 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
       }
       await user.save();
       console.log('Subscription created');
-    } else if (eventData.eventType === 'subscription_updated') {
+    } else if (eventType === 'subscriptionupdatednotification') {
       console.log('Subscription updated');
-    } else if (eventData.eventType === 'subscription_cancelled') {
+    } else if (eventType === 'subscriptioncancellednotification') {
       console.log('Subscription cancelled');
-    } else if (eventData.eventType === 'customer_created') {
+    } else if (eventType === 'customercreatednotification') {
       const user = await User.findOne({ email: eventData.email });
       if (!user) { 
         throw new Error('User not found');
