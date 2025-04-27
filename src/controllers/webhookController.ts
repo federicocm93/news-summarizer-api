@@ -33,22 +33,19 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
         }
       }
       await user.save();
-      console.log('Subscription created');
-    } else if (eventType === 'subscriptionupdatednotification') {
-      console.log('Subscription updated');
-    } else if (eventType === 'subscriptioncancellednotification') {
-      console.log('Subscription cancelled');
-    } else if (eventType === 'customercreatednotification') {
+      console.log('Subscription created for user', user.email);
+    } else if (eventType === 'customernotification') {
       const user = await User.findOne({ email: eventData.email });
       if (!user) { 
         throw new Error('User not found');
       }
       user.externalId = eventData.id;
       await user.save();
-      return res.status(200).json({
-        status: 'success',
-        message: 'Webhook received'
-      });
+      console.log('External ID set for user', user.email);
+    } else if (eventType === 'subscriptionupdatednotification') {
+      console.log('Subscription updated');
+    } else if (eventType === 'subscriptioncancellednotification') {
+      console.log('Subscription cancelled');
     }
     return res.status(200).json({
       status: 'success',
