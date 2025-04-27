@@ -4,6 +4,7 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
   try {
     console.log('Webhook received');
     const eventData = req.body;
+    console.log('eventData', eventData);
     if (eventData.eventType === 'subscription_created') {
       const user = await User.findOne({ externalId: eventData.customer_id });
       if (!user) { 
