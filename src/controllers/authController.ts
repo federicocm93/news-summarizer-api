@@ -151,6 +151,7 @@ export const getMe = async (req: any, res: any): Promise<void> => {
     res.status(200).json({
       status: 'success',
       data: {
+        id: user._id,
         email,
         apiKey,
         subscriptionTier,
