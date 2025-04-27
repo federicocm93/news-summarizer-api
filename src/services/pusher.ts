@@ -14,7 +14,11 @@ export const triggerNewSubscriptionPushEvent = async (userId: string) => {
     console.warn("Cannot trigger new subscription push event: No user ID provided");
     return;
   }
-  pusher.trigger("user-subscription-channel", "new-subscription", {
-    userId
-  });
+  try {
+    pusher.trigger("user-subscription-channel", "new-subscription", {
+      userId
+    });
+  } catch (error: any) {
+    console.error("Error triggering new subscription push event:", error.message ?? error);
+  }
 };
