@@ -16,6 +16,8 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
       if (!user) { 
         throw new Error('User not found');
       }
+      console.log('price', eventData.items[0].price);
+      console.log('product', eventData.items[0].product);
       const subscriptionTier = eventData.items[0].price.custom_data.tier as SubscriptionTier;
       const subscriptionFrequency = eventData.items[0].price.custom_data.type;
 
