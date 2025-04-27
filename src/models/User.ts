@@ -97,6 +97,7 @@ userSchema.methods.generateJWT = function(): string {
 
 userSchema.methods.generatePremiumMonthlySubscription = function(): void {
   this.subscriptionTier = SubscriptionTier.PREMIUM;
+  this.requestsRemaining = 500;
   this.subscriptionExpirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
 };
 
@@ -107,6 +108,7 @@ userSchema.methods.generatePremiumYearlySubscription = function(): void {
 
 userSchema.methods.generateProMonthlySubscription = function(): void {
   this.subscriptionTier = SubscriptionTier.PRO;
+  this.requestsRemaining = 5000;
   this.subscriptionExpirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
 };
 

@@ -26,6 +26,7 @@
     "mongoose": "^7.5.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pusher": "^5.2.0",
     "stripe": "^13.2.0",
     "undici": "^5.28.2",
     "uuid": "^9.0.0"

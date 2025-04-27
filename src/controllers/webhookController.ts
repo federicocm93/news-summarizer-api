@@ -1,11 +1,10 @@
 import User, { SubscriptionTier } from "../models/User";
 import { SubscriptionCreatedNotification } from '@paddle/paddle-node-sdk';
-
+import { triggerNewSubscriptionPushEvent } from "../services/pusher";
 export const handleWebhook = async (req: any, res: any): Promise<void> => {
   try {
-    console.log('Webhook received');
     const eventData = req.body;
-    console.log('eventData', eventData);
+    console.log('Webhook received:', eventData);
     
     // Get the event type from the constructor name
     const eventType = eventData.constructor.name.toLowerCase();
@@ -33,6 +32,7 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
         }
       }
       await user.save();
+      await triggerNewSubscriptionPushEvent(user._id);
       console.log('Subscription created for user', user.email);
     } else if (eventType === 'customernotification') {
       const user = await User.findOne({ email: eventData.email });
