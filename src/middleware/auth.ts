@@ -160,7 +160,7 @@ export const logApiRequest = async (req: any, res: any, next: any): Promise<void
         status: res.statusCode,
         responseTime,
         userAgent: req.headers['user-agent'] || 'Unknown',
-        ipAddress: req.ip || req.socket.remoteAddress || 'Unknown'
+        ipAddress: req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress || 'Unknown'
       });
       
       apiRequest.save().catch((err: Error) => console.error('Error logging API request:', err));
