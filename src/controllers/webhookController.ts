@@ -1,4 +1,4 @@
-import User, { SubscriptionTier } from "../models/User";
+import User, { IUserDocument, SubscriptionTier } from "../models/User";
 import { SubscriptionCreatedNotification } from '@paddle/paddle-node-sdk';
 import { triggerNewSubscriptionPushEvent } from "../services/pusher";
 export const handleWebhook = async (req: any, res: any): Promise<void> => {
@@ -10,42 +10,21 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
     const eventType = eventData.constructor.name.toLowerCase();
     console.log('Event type:', eventType);
 
+    const user = await User.findOne({ externalId: eventData.customerId });
+    if (!user) { 
+      throw new Error('User not found');
+    }
     if (eventType === 'subscriptioncreatednotification') {
-      const user = await User.findOne({ externalId: eventData.customerId });
-      if (!user) { 
-        throw new Error('User not found');
-      }
-      const subscriptionTier = eventData.items[0].price.customData.tier as SubscriptionTier;
-      const subscriptionFrequency = eventData.items[0].price.customData.type;
-
-      if (subscriptionTier === SubscriptionTier.PREMIUM) {
-        if (subscriptionFrequency === 'monthly') {
-          user.generatePremiumMonthlySubscription();
-        } else if (subscriptionFrequency === 'yearly') {
-          user.generatePremiumYearlySubscription();
-        }
-      } else if (subscriptionTier === SubscriptionTier.PRO) {
-        if (subscriptionFrequency === 'monthly') {
-          user.generateProMonthlySubscription();
-        } else if (subscriptionFrequency === 'yearly') {
-          user.generateProYearlySubscription();
-        }
-      }
-      await user.save();
-      await triggerNewSubscriptionPushEvent(user._id);
+      await handleUserSubscriptionCreationOrUpdate(user, eventData);
       console.log('Subscription created for user', user.email);
-    } else if (eventType === 'customernotification') {
-      const user = await User.findOne({ email: eventData.email });
-      if (!user) { 
-        throw new Error('User not found');
-      }
-      user.externalId = eventData.id;
-      await user.save();
-      console.log('External ID set for user', user.email);
     } else if (eventType === 'subscriptionupdatednotification') {
-      console.log('Subscription updated');
+      await handleUserSubscriptionCreationOrUpdate(user, eventData);
+      console.log('Subscription updated for user', user.email);
+    } else if (eventType === 'customernotification') {
+      await handleUserExternalIdUpdate(user, eventData);
+      console.log('External ID set for user', user.email);
     } else if (eventType === 'subscriptioncancellednotification') {
-      console.log('Subscription cancelled');
+      console.log('Subscription cancelled for user', user.email, 'not implemented');
     }
     return res.status(200).json({
       status: 'success',
@@ -59,3 +38,29 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
     });
   }
 };
+
+const handleUserSubscriptionCreationOrUpdate = async (user: IUserDocument, eventData: any): Promise<void> => {
+  const subscriptionTier = eventData.items[0].price.customData.tier as SubscriptionTier;
+  const subscriptionFrequency = eventData.items[0].price.customData.type;
+
+  if (subscriptionTier === SubscriptionTier.PREMIUM) {  
+    if (subscriptionFrequency === 'monthly') {
+      user.generatePremiumMonthlySubscription();
+    } else if (subscriptionFrequency === 'yearly') {
+      user.generatePremiumYearlySubscription();
+    }
+  } else if (subscriptionTier === SubscriptionTier.PRO) {
+    if (subscriptionFrequency === 'monthly') {
+      user.generateProMonthlySubscription();
+    } else if (subscriptionFrequency === 'yearly') {
+      user.generateProYearlySubscription();
+    }
+  }
+  await user.save();
+  await triggerNewSubscriptionPushEvent(user._id);
+}
+
+const handleUserExternalIdUpdate = async (user: IUserDocument, eventData: any): Promise<void> => {
+  user.externalId = eventData.id;
+  await user.save();
+}
