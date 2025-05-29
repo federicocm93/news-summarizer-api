@@ -17,7 +17,7 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
     if (eventType === 'subscriptioncreatednotification') {
       await handleUserSubscriptionCreationOrUpdate(user, eventData);
       console.log('Subscription created for user', user.email);
-    } else if (eventType === 'subscriptionupdatednotification') {
+    } else if (eventType === 'subscriptionnotification') {
       await handleUserSubscriptionCreationOrUpdate(user, eventData);
       console.log('Subscription updated for user', user.email);
     } else if (eventType === 'customernotification') {
