@@ -147,7 +147,7 @@ export const googleAuthCallback = (req: any, res: any): void => {
 export const getMe = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
-    const { email, apiKey, subscriptionTier, requestsRemaining } = user;
+    const { email, apiKey, subscriptionTier, requestsRemaining, subscriptionExternalId } = user;
     res.status(200).json({
       status: 'success',
       data: {
@@ -155,7 +155,8 @@ export const getMe = async (req: any, res: any): Promise<void> => {
         email,
         apiKey,
         subscriptionTier,
-        requestsRemaining
+        requestsRemaining,
+        subscriptionExternalId
       }
     });
   } catch (error) {
