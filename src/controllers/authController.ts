@@ -211,19 +211,20 @@ export const refreshApiKey = async (req: any, res: any): Promise<void> => {
 export const getPaddleCustomerPortalLink = async (req: any, res: any): Promise<void> => {
   try {
     const user = req.user;
-    if (!user || !user.subscriptionExternalId) {
-      res.status(400).json({ status: 'fail', message: 'User subscriptionExternalId not found' });
+    if (!user || !user.externalId) {
+      res.status(400).json({ status: 'fail', message: 'User externalId not found' });
       return;
     }
     const apiKey = process.env.PADDLE_API_KEY;
-    const customerId = user.subscriptionExternalId;
+    const customerId = user.externalId;
+    const subscriptionId = user.subscriptionExternalId;
     const response = await fetch(`https://api.paddle.com/customers/${customerId}/portal-sessions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ subscription_ids: [customerId] })
+      body: JSON.stringify({ subscription_ids: [subscriptionId] })
     });
     const data = await response.json();
     if (data && data.data && data.data.urls && data.data.urls.general && data.data.urls.general.overview) {
