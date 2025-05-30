@@ -1,11 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import User, { SubscriptionTier } from '../models/User';
+import { Paddle } from '@paddle/paddle-node-sdk';
+import fetch from 'node-fetch';
 
 // Get environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = '30d';
 const FREE_TRIAL_REQUESTS = parseInt(process.env.FREE_TRIAL_REQUESTS || '50', 10);
+
+const paddle = new Paddle(process.env.PADDLE_API_KEY || '');
 
 // Generate JWT token
 const signToken = (id: string, email: string): string => {
@@ -201,4 +205,34 @@ export const refreshApiKey = async (req: any, res: any): Promise<void> => {
       message: 'Error refreshing API key'
     });
   }
-}; 
+};
+
+// Create Paddle Customer Portal Link
+export const getPaddleCustomerPortalLink = async (req: any, res: any): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user || !user.subscriptionExternalId) {
+      res.status(400).json({ status: 'fail', message: 'User subscriptionExternalId not found' });
+      return;
+    }
+    const apiKey = process.env.PADDLE_API_KEY;
+    const customerId = user.subscriptionExternalId;
+    const response = await fetch(`https://api.paddle.com/customers/${customerId}/portal-sessions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ subscription_ids: [customerId] })
+    });
+    const data = await response.json();
+    if (data && data.data && data.data.urls && data.data.urls.general && data.data.urls.general.overview) {
+      res.status(200).json({ status: 'success', url: data.data.urls.general.overview });
+    } else {
+      res.status(500).json({ status: 'error', message: 'Failed to get portal link', details: data });
+    }
+  } catch (error: any) {
+    console.error('Error creating Paddle portal link:', error);
+    res.status(500).json({ status: 'error', message: error.message || 'Error creating portal link' });
+  }
+} 

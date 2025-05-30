@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe, refreshApiKey, googleAuthCallback } from '../controllers/authController';
+import { register, login, getMe, refreshApiKey, googleAuthCallback, getPaddleCustomerPortalLink } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 import passport from '../config/passport';
 
@@ -21,5 +21,6 @@ router.get('/google/callback',
 // Protected routes
 router.get('/me', protect, getMe);
 router.post('/refresh-api-key', protect, refreshApiKey);
+router.post('/customer-portal-link', protect, getPaddleCustomerPortalLink);
 
 export default router; 
