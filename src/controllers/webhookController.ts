@@ -42,6 +42,7 @@ export const handleWebhook = async (req: any, res: any): Promise<void> => {
 const handleUserSubscriptionCreationOrUpdate = async (user: IUserDocument, eventData: any): Promise<void> => {
   const subscriptionTier = eventData.items[0].price.customData.tier as SubscriptionTier;
   const subscriptionFrequency = eventData.items[0].price.customData.type;
+  const subscriptionExternalId = eventData.id;
 
   if (subscriptionTier === SubscriptionTier.PREMIUM) {  
     if (subscriptionFrequency === 'monthly') {
@@ -56,6 +57,7 @@ const handleUserSubscriptionCreationOrUpdate = async (user: IUserDocument, event
       user.generateProYearlySubscription();
     }
   }
+  user.subscriptionExternalId = subscriptionExternalId;
   await user.save();
   await triggerNewSubscriptionPushEvent(user._id);
 }
