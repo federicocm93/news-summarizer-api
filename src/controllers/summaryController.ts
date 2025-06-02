@@ -1,3 +1,4 @@
+import { ChatGptModel } from '../enums/ChatGptModel';
 import { fetch } from 'undici';
 
 // Get the OpenAI API key from environment variables
@@ -7,6 +8,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const handleOpenAIRequest = async (req: any, res: any): Promise<void> => {
   try {
     const startTime = Date.now();
+    const model = ChatGptModel.GPT_4_1_MINI;
     
     // Validate the request body
     if (!req.body.text) {
@@ -29,7 +31,7 @@ Summary:`;
 
     // Create the OpenAI API request payload
     const requestPayload = {
-      model: "gpt-4o", // Switched to fastest model as of June 2025
+      model,
       messages: [
         {
           role: "system",
@@ -41,7 +43,7 @@ Summary:`;
         }
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 2000,
       stream: true // Enable streaming
     };
 
@@ -89,7 +91,7 @@ Summary:`;
             res.write('data: [DONE]\n\n');
             res.end();
             const totalTime = Date.now() - startTime;
-            console.log(`Summary request took using gpt-4o model ${totalTime} ms`);
+            console.log(`Summary request took using ${model} model ${totalTime} ms`);
             return;
           }
           try {
