@@ -29,7 +29,7 @@ Summary:`;
 
     // Create the OpenAI API request payload
     const requestPayload = {
-      model: "gpt-4o-mini", // Switched to fastest model as of June 2025
+      model: "gpt-3.5-turbo", // Switched to fastest model as of June 2025
       messages: [
         {
           role: "system",
@@ -76,7 +76,7 @@ Summary:`;
     const responseTime = Date.now() - startTime;
 
     // Log response time for performance monitoring
-    console.log(`OpenAI API response time: ${responseTime}ms`);
+    console.log(`OpenAI API response time using model gpt-3.5-turbo: ${responseTime}ms`);
 
     // Format the response to match what the client expects
     const formattedResponse = {
