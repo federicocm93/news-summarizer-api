@@ -42,8 +42,8 @@ Summary:`;
           content: formattedPrompt
         }
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.3, // Reduced for more consistent results
+      max_tokens: 300, // Reduced from 2000 to ensure concise summaries
       stream: true // Enable streaming
     };
 
