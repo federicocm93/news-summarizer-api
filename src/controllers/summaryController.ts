@@ -29,7 +29,7 @@ Summary:`;
 
     // Create the OpenAI API request payload
     const requestPayload = {
-      model: "gpt-3.5-turbo", // Switched to fastest model as of June 2025
+      model: "gpt-4o", // Switched to fastest model as of June 2025
       messages: [
         {
           role: "system",
@@ -88,6 +88,8 @@ Summary:`;
           if (data === '[DONE]') {
             res.write('data: [DONE]\n\n');
             res.end();
+            const totalTime = Date.now() - startTime;
+            console.log(`Summary request took using gpt-4o model ${totalTime} ms`);
             return;
           }
           try {
@@ -101,6 +103,7 @@ Summary:`;
           }
         }
       }
+      
     }
     res.end();
   } catch (error) {
