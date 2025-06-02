@@ -29,7 +29,7 @@ Summary:`;
 
     // Create the OpenAI API request payload
     const requestPayload = {
-      model: "gpt-4.1-mini", // Updated to cost-effective model as of June 2025
+      model: "gpt-4o-mini", // Switched to fastest model as of June 2025
       messages: [
         {
           role: "system",
