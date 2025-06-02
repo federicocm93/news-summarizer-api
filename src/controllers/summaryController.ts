@@ -41,10 +41,14 @@ Summary:`;
         }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 500,
+      stream: true // Enable streaming
     };
 
-    // Make the API call to OpenAI
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -55,37 +59,50 @@ Summary:`;
     });
 
     if (!response.ok) {
-      const errorData = await response.json() as { error: { message: string } };
-      console.error('OpenAI API error:', response.status, errorData.error.message);
+      const errorData = await response.json();
+      let details = '';
+      if (errorData && typeof errorData === 'object' && 'error' in errorData && errorData.error && typeof errorData.error === 'object' && 'message' in errorData.error && typeof errorData.error.message === 'string') {
+        details = errorData.error.message;
+      }
       res.status(response.status).json({
         error: 'Error from OpenAI API',
         code: 'OPENAI_ERROR',
-        details: errorData.error.message
+        details: details || ''
       });
       return;
     }
 
-    // Process the OpenAI response
-    const data = await response.json() as {
-      choices: Array<{
-        message: {
-          content: string;
-        };
-      }>;
-    };
-    const responseTime = Date.now() - startTime;
-
-    // Log response time for performance monitoring
-    console.log(`OpenAI API response time using model gpt-3.5-turbo: ${responseTime}ms`);
-
-    // Format the response to match what the client expects
-    const formattedResponse = {
-      response: data.choices[0]?.message?.content || '',
-      // Also include content for compatibility with the OpenAI direct client
-      content: data.choices[0]?.message?.content || ''
-    };
-
-    res.json(formattedResponse);
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('No reader available');
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let parts = buffer.split('\n\n');
+      buffer = parts.pop() ?? '';
+      for (const part of parts) {
+        if (part.startsWith('data: ')) {
+          const data = part.slice(6);
+          if (data === '[DONE]') {
+            res.write('data: [DONE]\n\n');
+            res.end();
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices[0]?.delta?.content;
+            if (content) {
+              res.write(`data: ${JSON.stringify({ content })}\n\n`);
+            }
+          } catch (e) {
+            // Ignore parse errors for non-JSON lines
+          }
+        }
+      }
+    }
+    res.end();
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     res.status(500).json({ 
