@@ -68,11 +68,13 @@ const userSchema = new Schema<IUserDocument>(
     resetTokenExpires: Date,
     externalId: {
       type: String,
-      unique: true
+      unique: true,
+      sparse: true
     },
     subscriptionExternalId: {
       type: String,
-      unique: true
+      unique: true,
+      sparse: true
     }
   },
   {
