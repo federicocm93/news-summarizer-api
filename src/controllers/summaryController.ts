@@ -145,3 +145,74 @@ export const getUsageStats = async (req: any, res: any): Promise<void> => {
     });
   }
 };
+
+// Get allowed news domains
+export const getAllowedNewsDomains = async (req: any, res: any): Promise<void> => {
+  try {
+    const allowedDomains = [
+      'elpais.com',
+      'elmundo.es',
+      'abc.es',
+      'lavanguardia.com',
+      'clarin.com',
+      'lanacion.com.ar',
+      'elmundo.com',
+      'eluniversal.com',
+      'eltiempo.com',
+      'emol.com',
+      'milenio.com',
+      'elcomercio.pe',
+      'infobae.com',
+      'publico.es',
+      'eldiario.es',
+      'vox.com',
+      'cnn.com',
+      'bbc.com',
+      'nytimes.com',
+      'washingtonpost.com',
+      'theguardian.com',
+      'foxnews.com',
+      'nbcnews.com',
+      'cbsnews.com',
+      'abcnews.go.com',
+      'reuters.com',
+      'bloomberg.com',
+      'forbes.com',
+      'npr.org',
+      'apnews.com',
+      'newsweek.com',
+      'usatoday.com',
+      'morningstar.com',
+      'economist.com',
+      'usnews.com',
+      'wsj.com',
+      'bloomberg.com',
+      'ft.com',
+      'npr.org',
+      'reuters.com',
+      'msnbc.com',
+      '*times.com',
+      'es-us.noticias.yahoo.com',
+      'espanol.yahoo.com/noticias',
+      'noticias.yahoo.com',
+      'us.yahoo.com',
+      'us.yahoo.com/news',
+      '*yahoo.com',
+      'tn.com.ar',
+      '0223.com.ar'
+    ];
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        domains: allowedDomains
+      }
+    });
+  } catch (error) {
+    console.error('Error getting allowed news domains:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving allowed news domains'
+    });
+  }
+};
