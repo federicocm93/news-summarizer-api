@@ -4,7 +4,7 @@ import User, { SubscriptionTier } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 
 // Get environment variables
-const FREE_TRIAL_REQUESTS = parseInt(process.env.FREE_TRIAL_REQUESTS || '50', 10);
+const FREE_TRIAL_REQUESTS = parseInt(process.env.FREE_TRIAL_REQUESTS || '30', 10);
 
 // Configure Passport to use Google OAuth 2.0 strategy
 passport.use(

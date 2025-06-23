@@ -3,11 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import User, { SubscriptionTier } from '../models/User';
 import { Paddle } from '@paddle/paddle-node-sdk';
 import fetch from 'node-fetch';
+import { resetFreeUserRequests } from '../services/cronService';
 
 // Get environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = '30d';
-const FREE_TRIAL_REQUESTS = parseInt(process.env.FREE_TRIAL_REQUESTS || '50', 10);
+const FREE_TRIAL_REQUESTS = parseInt(process.env.FREE_TRIAL_REQUESTS || '30', 10);
 
 const paddle = new Paddle(process.env.PADDLE_API_KEY || '');
 
@@ -57,6 +58,7 @@ export const register = async (req: any, res: any): Promise<void> => {
       subscriptionTier: SubscriptionTier.FREE,
       subscriptionExpirationDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Same day next month
       requestsRemaining: FREE_TRIAL_REQUESTS,
+      lastRequestReset: new Date(),
     });
 
     // Generate JWT token
@@ -236,4 +238,31 @@ export const getPaddleCustomerPortalLink = async (req: any, res: any): Promise<v
     console.error('Error creating Paddle portal link:', error);
     res.status(500).json({ status: 'error', message: error.message || 'Error creating portal link' });
   }
-} 
+};
+
+// Manual trigger for free user request reset (for testing purposes)
+export const triggerFreeUserReset = async (req: any, res: any): Promise<void> => {
+  try {
+    // Only allow this in development environment for security
+    if (process.env.NODE_ENV === 'production') {
+      res.status(403).json({
+        status: 'fail',
+        message: 'This endpoint is not available in production'
+      });
+      return;
+    }
+
+    await resetFreeUserRequests();
+    
+    res.status(200).json({
+      status: 'success',
+      message: 'Free user request reset triggered manually'
+    });
+  } catch (error) {
+    console.error('Error in manual free user reset:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error triggering free user reset'
+    });
+  }
+}; 

@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes';
 import summaryRoutes from './routes/summaryRoutes';
 import webhookRoutes from './routes/webhooksRoutes';
 import MongoStore from 'connect-mongo';
+import { initializeCronJobs } from './services/cronService';
 
 // Load environment variables
 dotenv.config();
@@ -84,6 +85,9 @@ app.use((req: any, res: any) => {
     message: `Route ${req.originalUrl} not found`
   });
 });
+
+// Initialize cron jobs
+initializeCronJobs();
 
 // Start server
 app.listen(PORT, () => {

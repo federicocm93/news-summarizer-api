@@ -14,6 +14,7 @@ export interface IUserDocument extends mongoose.Document {
   subscriptionTier: SubscriptionTier;
   subscriptionExpirationDate: Date;
   requestsRemaining: number;
+  lastRequestReset: Date;
   resetTokenUsed: boolean;
   resetToken: string;
   resetTokenExpires: Date;
@@ -59,6 +60,10 @@ const userSchema = new Schema<IUserDocument>(
     requestsRemaining: {
       type: Number,
       default: 0
+    },
+    lastRequestReset: {
+      type: Date,
+      default: Date.now
     },
     resetTokenUsed: {
       type: Boolean,

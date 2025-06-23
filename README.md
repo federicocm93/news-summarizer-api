@@ -7,13 +7,14 @@ This is the backend server for the News Summarizer Chrome extension with subscri
 - 🔒 User authentication with JWT and API key options
 - 💲 Subscription management with Stripe integration
 - 📊 Request tracking with usage limits based on subscription tier
-- 🚀 Free trial system with 50 requests for new users
+- 🚀 Free trial system with 30 requests for new users
+- ⏰ Automated monthly request reset for free tier users
 
 ## Subscription Tiers
 
 | Tier | Requests Per Month | Description |
 |------|-------------------|-------------|
-| Free | 0 (50 trial only) | One-time free trial with 50 requests |
+| Free | 30 | Monthly renewed free tier with 30 requests |
 | Premium | 500 | Basic subscription with 500 requests per month |
 | Pro | 5000 | Professional subscription with 5000 requests per month |
 
@@ -111,6 +112,7 @@ docker run -p 3000:3000 --env-file .env news-summarizer-server:latest
 - `POST /api/auth/login` - Login and get access token
 - `GET /api/auth/me` - Get current user info
 - `POST /api/auth/refresh-api-key` - Generate a new API key
+- `POST /api/auth/trigger-free-reset` - Manually trigger free user request reset (development only)
 
 ### Subscriptions
 
@@ -137,6 +139,24 @@ The API supports two authentication methods:
    ```
    X-API-Key: <apiKey>
    ```
+
+## Automated Tasks
+
+### Free Tier Request Reset
+
+The system includes an automated cron job that runs daily at 2 AM UTC to check for free tier users eligible for request reset:
+
+- **Schedule**: Daily at 2:00 AM UTC
+- **Logic**: Resets requests to 30 for users on the FREE tier whose `lastRequestReset` date is more than 30 days ago
+- **Configuration**: The number of requests can be configured via the `FREE_TRIAL_REQUESTS` environment variable (default: 30)
+
+The cron job:
+1. Finds all users with `subscriptionTier: FREE` 
+2. Checks if their `lastRequestReset` date is more than 30 days ago
+3. Resets their `requestsRemaining` to the configured amount
+4. Updates their `lastRequestReset` to the current date
+
+For testing purposes, you can manually trigger the reset in development mode using the `/api/auth/trigger-free-reset` endpoint.
 
 ## Error Handling
 
