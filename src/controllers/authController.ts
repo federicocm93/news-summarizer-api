@@ -209,6 +209,70 @@ export const refreshApiKey = async (req: any, res: any): Promise<void> => {
   }
 };
 
+// Create extension user with UUID-based API key
+export const createExtensionUser = async (req: any, res: any): Promise<void> => {
+  try {
+    const { extensionId } = req.body;
+    
+    if (!extensionId) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'Extension ID is required'
+      });
+      return;
+    }
+
+    // Check if user already exists with this extension ID as API key
+    const existingUser = await User.findOne({ apiKey: extensionId });
+    if (existingUser) {
+      res.status(200).json({
+        status: 'success',
+        data: {
+          user: {
+            id: existingUser._id,
+            apiKey: existingUser.apiKey,
+            subscriptionTier: existingUser.subscriptionTier,
+            requestsRemaining: existingUser.requestsRemaining,
+            isExtensionUser: true
+          }
+        }
+      });
+      return;
+    }
+
+    // Create new extension user with UUID as both API key and identifier
+    const newUser = await User.create({
+      email: `extension-${extensionId}@tldr-news.local`, // Temporary email format
+      password: uuidv4(), // Random password, not used for login
+      apiKey: extensionId, // Use the extension-generated UUID as API key
+      subscriptionTier: SubscriptionTier.FREE,
+      subscriptionExpirationDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      requestsRemaining: FREE_TRIAL_REQUESTS,
+      lastRequestReset: new Date(),
+      isExtensionUser: true // Flag to identify extension users
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        user: {
+          id: newUser._id,
+          apiKey: newUser.apiKey,
+          subscriptionTier: newUser.subscriptionTier,
+          requestsRemaining: newUser.requestsRemaining,
+          isExtensionUser: true
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error creating extension user:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error creating extension user'
+    });
+  }
+};
+
 // Create Paddle Customer Portal Link
 export const getPaddleCustomerPortalLink = async (req: any, res: any): Promise<void> => {
   try {

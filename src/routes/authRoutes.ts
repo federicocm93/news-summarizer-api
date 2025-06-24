@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe, refreshApiKey, googleAuthCallback, getPaddleCustomerPortalLink, triggerFreeUserReset } from '../controllers/authController';
+import { register, login, getMe, refreshApiKey, googleAuthCallback, getPaddleCustomerPortalLink, triggerFreeUserReset, createExtensionUser } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 import passport from '../config/passport';
 
@@ -8,6 +8,7 @@ const router = express.Router();
 // Public routes
 router.post('/register', register);
 router.post('/login', login);
+router.post('/extension-user', createExtensionUser);
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

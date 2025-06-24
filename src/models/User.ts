@@ -20,6 +20,7 @@ export interface IUserDocument extends mongoose.Document {
   resetTokenExpires: Date;
   externalId?: string;
   subscriptionExternalId?: string;
+  isExtensionUser?: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
   generateJWT(): string;
   generatePremiumMonthlySubscription(): void;
@@ -80,6 +81,10 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       unique: true,
       sparse: true
+    },
+    isExtensionUser: {
+      type: Boolean,
+      default: false
     }
   },
   {
