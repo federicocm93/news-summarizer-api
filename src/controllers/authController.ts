@@ -20,7 +20,7 @@ const signToken = (id: string, email: string): string => {
 // Register a new user
 export const register = async (req: any, res: any): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password, extensionId } = req.body;
     if (!email || !password) {
       res.status(400).json({
         status: 'fail',
@@ -37,6 +37,60 @@ export const register = async (req: any, res: any): Promise<void> => {
       return;
     }
 
+    // Handle extension user upgrade
+    if (extensionId) {
+      // Find the existing extension user
+      const extensionUser = await User.findOne({ 
+        apiKey: extensionId, 
+        isExtensionUser: true 
+      });
+
+      if (!extensionUser) {
+        res.status(400).json({
+          status: 'fail',
+          message: 'Invalid extension ID or extension user not found'
+        });
+        return;
+      }
+
+      // Check if email is already taken by another user
+      const existingEmailUser = await User.findOne({ 
+        email,
+        _id: { $ne: extensionUser._id } // Exclude the current extension user
+      });
+      
+      if (existingEmailUser) {
+        res.status(400).json({
+          status: 'fail',
+          message: 'User already exists with this email'
+        });
+        return;
+      }
+
+      // Upgrade the extension user to a full account
+      extensionUser.email = email;
+      extensionUser.password = password; // Will be hashed by pre-save hook
+      extensionUser.isExtensionUser = false;
+      await extensionUser.save();
+
+      // Generate JWT token
+      const token = signToken(extensionUser.id, extensionUser.email);
+
+      // Remove password from output
+      extensionUser.password = undefined as any;
+
+      res.status(200).json({
+        status: 'success',
+        token,
+        data: {
+          user: extensionUser
+        },
+        message: 'Account upgraded successfully. Your existing usage has been preserved.'
+      });
+      return;
+    }
+
+    // Regular user registration (non-extension)
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
